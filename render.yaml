@@ -2,4 +2,5 @@ services:
   - type: web
     name: que-tan-robot
     runtime: node
+    plan: free
     startCommand: node server.js
