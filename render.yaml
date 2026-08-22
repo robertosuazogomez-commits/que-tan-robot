@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: que-tan-robot
+    runtime: node
+    startCommand: node server.js
