@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Panel del profesor</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 20px;
+      color: #bbb;
+      margin-bottom: 35px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: #222;
+      border-radius: 20px;
+      padding: 25px 45px;
+      text-align: center;
+      min-width: 220px;
+    }
+
+    .stat-label {
+      color: #aaa;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: bold;
+    }
+
+    .chart {
+      max-width: 1000px;
+      margin: auto;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      height: 400px;
+      padding: 20px;
+      background: #1b1b1b;
+      border-radius: 20px;
+    }
+
+    .bar-container {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .bar {
+      width: 100%;
+      max-width: 70px;
+      background: white;
+      border-radius: 8px 8px 0 0;
+      transition: height 0.4s ease;
+      min-height: 2px;
+    }
+
+    .bar-number {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .bar-count {
+      margin-bottom: 5px;
+      font-size: 16px;
+      color: #aaa;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .reset {
+      border: none;
+      background: #333;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .reset:hover {
+      background: #555;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h1>🤖 ¿QUÉ TAN ROBOT ERES?</h1>
+
+  <div class="subtitle">
+    1 = Muy robot · 10 = Muy humano
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="stat-label">
+        RESPUESTAS
+      </div>
+
+      <div
+        class="stat-value"
+        id="total">
+        0
+      </div>
+    </div>
+
+    <div class="stat">
+
+      <div class="stat-label">
+        PROMEDIO
+      </div>
+
+      <div
+        class="stat-value"
+        id="average">
+        —
+      </div>
+
+    </div>
+
+  </div>
+
+  <div
+    class="chart"
+    id="chart">
+  </div>
+
+  <div class="controls">
+
+    <button
+      class="reset"
+      onclick="resetVotes()">
+
+      🔄 Reiniciar votación
+
+    </button>
+
+  </div>
+
+
+  <script>
+
+    const chart =
+      document.getElementById("chart");
+
+    function createChart() {
+
+      chart.innerHTML = "";
+
+      for (let i = 1; i <= 10; i++) {
+
+        const container =
+          document.createElement("div");
+
+        container.className =
+          "bar-container";
+
+        const count =
+          document.createElement("div");
+
+        count.className =
+          "bar-count";
+
+        count.id =
+          "count-" + i;
+
+        count.textContent = "0";
+
+        const bar =
+          document.createElement("div");
+
+        bar.className =
+          "bar";
+
+        bar.id =
+          "bar-" + i;
+
+        bar.style.height = "2px";
+
+        const number =
+          document.createElement("div");
+
+        number.className =
+          "bar-number";
+
+        number.textContent = i;
+
+        container.appendChild(count);
+        container.appendChild(bar);
+        container.appendChild(number);
+
+        chart.appendChild(container);
+      }
+    }
+
+
+    async function updateResults() {
+
+      try {
+
+        const response =
+          await fetch("/api/results");
+
+        const data =
+          await response.json();
+
+        document.getElementById("total")
+          .textContent = data.total;
+
+        document.getElementById("average")
+          .textContent =
+          data.total > 0
+            ? data.average
+            : "—";
+
+        const maximum =
+          Math.max(...data.distribution, 1);
+
+        for (let i = 1; i <= 10; i++) {
+
+          const value =
+            data.distribution[i - 1];
+
+          document.getElementById(
+            "count-" + i
+          ).textContent = value;
+
+          const height =
+            (value / maximum) * 300;
+
+          document.getElementById(
+            "bar-" + i
+          ).style.height =
+            Math.max(height, 2) + "px";
+        }
+
+      } catch (error) {
+
+        console.log(
+          "No se pudo actualizar."
+        );
+
+      }
+
+    }
+
+
+    async function resetVotes() {
+
+      const confirmation =
+        confirm(
+          "¿Seguro que quieres borrar todas las respuestas?"
+        );
+
+      if (!confirmation) return;
+
+      await fetch(
+        "/api/reset",
+        {
+          method: "POST"
+        }
+      );
+
+      updateResults();
+
+    }
+
+
+    createChart();
+
+    updateResults();
+
+    setInterval(
+      updateResults,
+      1000
+    );
+
+  </script>
+
+</body>
+</html>
