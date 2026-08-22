@@ -8,7 +8,9 @@ let votes = [];
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "estudiante.html"));
+});
 app.get("/api/results", (req, res) => {
   const distribution = Array(10).fill(0);
 
