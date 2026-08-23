@@ -344,6 +344,7 @@
 
   <script>
     let selectedValue = null;
+    let currentRoundId = null;
 
     const scale = document.getElementById("scale");
     const voteButton = document.getElementById("voteButton");
@@ -361,6 +362,7 @@
       else message.textContent = "Marca la verificación para continuar.";
     }
 
+    humanCheck.setAttribute("aria-pressed", "false");
     humanCheck.addEventListener("click", toggleHumanVerification);
     humanLabel.addEventListener("click", toggleHumanVerification);
 
@@ -382,6 +384,37 @@
       });
 
       scale.appendChild(button);
+    }
+
+    function resetForNewRound() {
+      selectedValue = null;
+      humanVerified = false;
+      humanCheck.classList.remove("checked");
+      humanCheck.setAttribute("aria-pressed", "false");
+      document.querySelectorAll(".scale button").forEach(btn => {
+        btn.classList.remove("selected");
+        btn.disabled = false;
+      });
+      voteButton.disabled = true;
+      voteButton.textContent = "ENVIAR EVALUACIÓN";
+      message.textContent = "Nueva votación disponible.";
+    }
+
+    async function checkRound() {
+      try {
+        const response = await fetch("/api/status");
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (currentRoundId === null) {
+          currentRoundId = data.roundId;
+        } else if (data.roundId !== currentRoundId) {
+          currentRoundId = data.roundId;
+          resetForNewRound();
+        }
+      } catch (error) {
+        console.log("No se pudo comprobar la votación actual.");
+      }
     }
 
     voteButton.addEventListener("click", async () => {
@@ -411,6 +444,9 @@
         voteButton.disabled = false;
       }
     });
+
+    checkRound();
+    setInterval(checkRound, 1000);
   </script>
 </body>
 </html>
