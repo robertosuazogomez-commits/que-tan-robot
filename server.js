@@ -5,28 +5,49 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 let votes = [];
+let roundNumber = 1;
+let roundId = 1;
+let history = [];
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "estudiante.html"));
 });
-app.get("/api/results", (req, res) => {
+
+function calculateResults(values) {
   const distribution = Array(10).fill(0);
 
-  votes.forEach(vote => {
+  values.forEach(vote => {
     distribution[vote - 1]++;
   });
 
   const average =
-    votes.length > 0
-      ? votes.reduce((sum, vote) => sum + vote, 0) / votes.length
+    values.length > 0
+      ? values.reduce((sum, vote) => sum + vote, 0) / values.length
       : 0;
 
-  res.json({
-    total: votes.length,
+  return {
+    total: values.length,
     average: Number(average.toFixed(1)),
     distribution
+  };
+}
+
+app.get("/api/results", (req, res) => {
+  res.json({
+    ...calculateResults(votes),
+    roundNumber,
+    roundId,
+    history
+  });
+});
+
+app.get("/api/status", (req, res) => {
+  res.json({
+    roundId,
+    roundNumber
   });
 });
 
@@ -42,15 +63,41 @@ app.post("/api/vote", (req, res) => {
   votes.push(value);
 
   res.json({
-    success: true
+    success: true,
+    roundId
   });
 });
 
-app.post("/api/reset", (req, res) => {
+app.post("/api/new-round", (req, res) => {
+  const current = calculateResults(votes);
+
+  if (current.total > 0) {
+    history.push({
+      textNumber: roundNumber,
+      total: current.total,
+      average: current.average,
+      distribution: current.distribution
+    });
+  }
+
   votes = [];
+  roundNumber++;
+  roundId++;
 
   res.json({
-    success: true
+    success: true,
+    roundNumber,
+    roundId
+  });
+});
+
+// Mantiene compatibilidad con la función anterior.
+app.post("/api/reset", (req, res) => {
+  votes = [];
+  res.json({
+    success: true,
+    roundNumber,
+    roundId
   });
 });
 
