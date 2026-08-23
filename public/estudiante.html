@@ -3,127 +3,283 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>¿Qué tan robot eres?</title>
+  <title>¿Puedes distinguirlo? · Verificación humana</title>
 
   <style>
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; }
+
+    :root {
+      --blue: #2f73e8;
+      --blue-soft: #eaf2ff;
+      --ink: #1f3557;
+      --muted: #657894;
+      --line: #d7e0ec;
+      --bg: #f3f6fa;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 22px;
     }
 
     .card {
-      width: 100%;
-      max-width: 500px;
-      background: white;
-      border-radius: 24px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      width: min(100%, 760px);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(31, 53, 87, .08);
+      padding: 28px;
+    }
+
+    .header {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      padding-bottom: 22px;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .captcha-icon {
+      width: 68px;
+      height: 68px;
+      flex: 0 0 68px;
+      border-radius: 10px;
+      background: var(--blue-soft);
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      font-size: 38px;
     }
 
     h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
+      margin: 0 0 5px;
+      font-size: clamp(27px, 5vw, 42px);
+      line-height: 1.05;
+      letter-spacing: -.7px;
     }
 
-    .instructions {
+    .subtitle {
+      margin: 0;
       font-size: 18px;
-      margin-bottom: 30px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+    }
+
+    .instruction {
+      margin: 20px 0 14px;
+      font-size: 16px;
+      color: #51637d;
+      line-height: 1.45;
+    }
+
+    .text-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfcfe;
+      padding: 20px;
+      min-height: 150px;
+    }
+
+    .text-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 13px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .text-label span {
+      font-size: 20px;
+    }
+
+    .sample-text {
+      margin: 0;
+      color: #243b5d;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .question {
+      text-align: center;
+      margin: 27px 0 15px;
+      font-size: clamp(19px, 3.5vw, 25px);
+      font-weight: 700;
     }
 
     .scale {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-bottom: 25px;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
     }
 
-    button {
-      border: none;
-      border-radius: 14px;
-      padding: 18px 5px;
-      font-size: 22px;
-      font-weight: bold;
+    .scale button {
+      min-width: 0;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      color: #58708f;
+      font-size: 21px;
+      font-weight: 700;
       cursor: pointer;
-      background: #e9e9e9;
+      transition: .15s ease;
     }
 
-    button:hover {
-      transform: scale(1.05);
+    .scale button:hover {
+      border-color: #9bbcf4;
+      background: #f7faff;
     }
 
-    button.selected {
-      background: #111;
+    .scale button.selected {
+      background: var(--blue);
+      border-color: var(--blue);
       color: white;
+      box-shadow: 0 0 0 3px #d9e7ff;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .scale-labels .human {
+      text-align: right;
     }
 
     #voteButton {
-      width: 100%;
-      background: #111;
+      display: block;
+      width: min(100%, 470px);
+      margin: 27px auto 0;
+      border: 0;
+      border-radius: 9px;
+      padding: 17px 22px;
+      background: var(--blue);
       color: white;
-      font-size: 22px;
-      padding: 18px;
-      margin-top: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+
+    #voteButton:hover:not(:disabled) {
+      filter: brightness(.96);
+      transform: translateY(-1px);
     }
 
     #voteButton:disabled {
-      background: #aaa;
+      background: #b9c5d5;
       cursor: not-allowed;
     }
 
     #message {
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
+      min-height: 25px;
+      margin-top: 15px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #2f73e8;
     }
 
-    .labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      color: #666;
-      margin-top: 8px;
+    .note {
+      margin: 4px 0 0;
+      text-align: center;
+      color: #8a9ab0;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 10px; align-items: flex-start; }
+      .card { margin-top: 10px; padding: 20px 16px; border-radius: 14px; }
+      .header { gap: 12px; }
+      .captcha-icon { width: 54px; height: 54px; flex-basis: 54px; font-size: 29px; }
+      .subtitle { font-size: 14px; }
+      .instruction { font-size: 15px; }
+      .text-box { padding: 16px; }
+      .sample-text { font-size: 16px; }
+      .scale { gap: 5px; }
+      .scale button { min-height: 48px; font-size: 17px; }
+      .scale-labels { font-size: 10px; }
+      #voteButton { font-size: 17px; }
     }
   </style>
 </head>
 
 <body>
+  <main class="card">
 
-  <div class="card">
+    <header class="header">
+      <div class="captcha-icon" aria-hidden="true">🤖</div>
+      <div>
+        <h1>¿PUEDES DISTINGUIRLO?</h1>
+        <p class="subtitle">VERIFICACIÓN HUMANA</p>
+      </div>
+    </header>
 
-    <h1>🤖 ¿Qué tan robot eres?</h1>
+    <p class="instruction">
+      Lee el texto de tu compañero y determina qué tan humano o artificial te parece.
+      No hay una respuesta correcta: nos interesa tu percepción.
+    </p>
 
-    <div class="instructions">
-      Elige un número del 1 al 10.
-    </div>
+    <section class="text-box" aria-label="Texto del compañero">
+      <div class="text-label">
+        <span>▤</span>
+        Texto del compañero
+      </div>
 
-    <div class="scale" id="scale"></div>
+      <!-- Este texto es solo un ejemplo visual.
+           Cuando implementemos la asignación de textos,
+           aquí aparecerá automáticamente el texto que debe evaluar cada estudiante. -->
+      <p class="sample-text" id="studentText">
+        La verdad es que, cuando pienso en todo lo que hemos vivido en estos años,
+        me doy cuenta de lo afortunado que soy. No solo por las personas que me
+        rodean, sino también por todas las pequeñas cosas que a veces damos por
+        sentadas. Creo que al final, lo más importante no es llegar a un destino,
+        sino disfrutar el proceso y aprender de cada experiencia.
+      </p>
+    </section>
 
-    <div class="labels">
-      <span>1 = Muy robot</span>
-      <span>10 = Muy humano</span>
+    <div class="question">¿Qué tan humano te parece este texto?</div>
+
+    <div class="scale" id="scale" aria-label="Escala de 1 a 10"></div>
+
+    <div class="scale-labels">
+      <span>1 · Muy artificial</span>
+      <span class="human">10 · Muy humano</span>
     </div>
 
     <button id="voteButton" disabled>
-      VOTAR
+      ✓ &nbsp; VERIFICAR TEXTO
     </button>
 
-    <div id="message"></div>
+    <div id="message" role="status" aria-live="polite"></div>
 
-  </div>
+    <p class="note">
+      Tu respuesta se incorporará al resultado colectivo de la actividad.
+    </p>
+
+  </main>
 
   <script>
-
     let selectedValue = null;
 
     const scale = document.getElementById("scale");
@@ -131,69 +287,52 @@
     const message = document.getElementById("message");
 
     for (let i = 1; i <= 10; i++) {
-
       const button = document.createElement("button");
-
+      button.type = "button";
       button.textContent = i;
+      button.setAttribute("aria-label", `Nivel ${i} de humanidad`);
 
       button.addEventListener("click", () => {
-
         selectedValue = i;
 
         document.querySelectorAll(".scale button")
           .forEach(btn => btn.classList.remove("selected"));
 
         button.classList.add("selected");
-
         voteButton.disabled = false;
-
+        message.textContent = "";
       });
 
       scale.appendChild(button);
     }
 
     voteButton.addEventListener("click", async () => {
-
       if (!selectedValue) return;
 
       voteButton.disabled = true;
+      message.textContent = "Verificando respuesta…";
 
       try {
-
         const response = await fetch("/api/vote", {
-
           method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            value: selectedValue
-          })
-
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: selectedValue })
         });
 
-        if (!response.ok) {
-          throw new Error("Error");
-        }
+        if (!response.ok) throw new Error("Error");
 
-        message.textContent = "✅ ¡Respuesta registrada!";
+        message.textContent = "✓ Verificación completada. Tu respuesta fue registrada.";
 
         document.querySelectorAll(".scale button")
           .forEach(btn => btn.disabled = true);
 
+        voteButton.textContent = "✓ RESPUESTA REGISTRADA";
+
       } catch (error) {
-
-        message.textContent =
-          "❌ No se pudo enviar la respuesta.";
-
+        message.textContent = "No se pudo registrar la respuesta. Inténtalo nuevamente.";
         voteButton.disabled = false;
       }
-
     });
-
   </script>
-
 </body>
 </html>
